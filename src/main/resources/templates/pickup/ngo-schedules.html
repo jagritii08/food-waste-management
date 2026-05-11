@@ -1,0 +1,338 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FoodBridge — My Pickup Schedules</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4ff; }
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 240px;
+            background: linear-gradient(180deg, #0d47a1, #1565c0, #1976d2);
+            box-shadow: 3px 0 15px rgba(0,0,0,0.2);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-logo {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-logo h1 { color: white; font-size: 20px; font-weight: 700; }
+        .sidebar-logo p { color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 3px; }
+        .sidebar-menu { padding: 20px 0; flex: 1; }
+        .menu-label {
+            color: rgba(255,255,255,0.4);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 0 20px;
+            margin-bottom: 8px;
+            margin-top: 15px;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .menu-item .icon { font-size: 18px; width: 24px; }
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .logout-btn:hover { background: rgba(255,255,255,0.15); }
+        .main { margin-left: 240px; min-height: 100vh; }
+        .topbar {
+            background: white;
+            padding: 0 30px;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .topbar h2 { font-size: 20px; color: #333; font-weight: 700; }
+        .content { padding: 30px; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-icon-box {
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        .stat-icon-box.blue { background: #e3f2fd; }
+        .stat-icon-box.orange { background: #fff3e0; }
+        .stat-icon-box.green { background: #e8f5e9; }
+        .stat-info .number { font-size: 28px; font-weight: 800; color: #333; }
+        .stat-info .label { font-size: 12px; color: #888; margin-top: 2px; }
+        .schedules-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .schedule-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            border-left: 5px solid #1976d2;
+            transition: transform 0.2s;
+        }
+        .schedule-card:hover { transform: translateY(-3px); }
+        .schedule-card.completed { border-left-color: #2e7d32; }
+        .schedule-card.cancelled { border-left-color: #c62828; opacity: 0.7; }
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .schedule-food { font-size: 18px; font-weight: 700; color: #333; }
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-scheduled { background: #e3f2fd; color: #1565c0; }
+        .badge-completed { background: #e8f5e9; color: #2e7d32; }
+        .badge-cancelled { background: #ffebee; color: #c62828; }
+        .schedule-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+        .info-item .value { font-weight: 600; }
+        .schedule-notes {
+            background: #f8f9fa;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .btn-cancel {
+            background: #ffebee;
+            color: #c62828;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .btn-cancel:hover { background: #ffcdd2; }
+        .empty {
+            text-align: center;
+            padding: 60px;
+            color: #bbb;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+        .empty-icon { font-size: 50px; margin-bottom: 15px; }
+        .empty h3 { font-size: 18px; color: #888; margin-bottom: 8px; }
+        .btn-primary {
+            display: inline-block;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #1565c0, #1976d2);
+            color: white;
+            padding: 10px 22px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <h1>🌿 FoodBridge</h1>
+        <p>NGO Portal</p>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-label">MENU</div>
+        <a href="/ngo/dashboard" class="menu-item">
+            <span class="icon">🏠</span> Dashboard
+        </a>
+        <a href="/pickup/ngo" class="menu-item active">
+            <span class="icon">📅</span> My Pickups
+        </a>
+        <a href="/ngo/search?keyword=" class="menu-item">
+            <span class="icon">🔍</span> Search Food
+        </a>
+    </div>
+    <div class="sidebar-footer">
+        <a href="/logout" class="logout-btn">
+            <span>🚪</span> Sign Out
+        </a>
+    </div>
+</div>
+
+<div class="main">
+    <div class="topbar">
+        <h2>📅 My Pickup Schedules</h2>
+        <span style="background:#e3f2fd;color:#1565c0;padding:6px 16px;
+                     border-radius:20px;font-size:13px;font-weight:600;">
+            🤝 NGO Portal
+        </span>
+    </div>
+
+    <div class="content">
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon-box blue">📅</div>
+                <div class="stat-info">
+                    <div class="number" th:text="${schedules.size()}">0</div>
+                    <div class="label">Total Schedules</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-box orange">⏳</div>
+                <div class="stat-info">
+                    <div class="number" th:text="${scheduledCount}">0</div>
+                    <div class="label">Upcoming</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-box green">✅</div>
+                <div class="stat-info">
+                    <div class="number" th:text="${completedCount}">0</div>
+                    <div class="label">Completed</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedules -->
+        <div th:if="${#lists.isEmpty(schedules)}">
+            <div class="empty">
+                <div class="empty-icon">📭</div>
+                <h3>No pickup schedules yet!</h3>
+                <p>Claim food and schedule a pickup time.</p>
+                <a href="/ngo/dashboard" class="btn-primary">
+                    Browse Available Food
+                </a>
+            </div>
+        </div>
+
+        <div class="schedules-grid" th:unless="${#lists.isEmpty(schedules)}">
+            <div th:each="s : ${schedules}"
+                 th:class="${s.status == 'COMPLETED'} ? 'schedule-card completed' :
+                            (${s.status == 'CANCELLED'} ? 'schedule-card cancelled' :
+                            'schedule-card')">
+
+                <div class="schedule-header">
+                    <div class="schedule-food"
+                         th:text="${s.foodRequest.foodItem.name}"></div>
+                    <span class="badge badge-scheduled"
+                          th:if="${s.status == 'SCHEDULED'}">⏳ Scheduled</span>
+                    <span class="badge badge-completed"
+                          th:if="${s.status == 'COMPLETED'}">✅ Completed</span>
+                    <span class="badge badge-cancelled"
+                          th:if="${s.status == 'CANCELLED'}">❌ Cancelled</span>
+                </div>
+
+                <div class="schedule-info">
+                    <div class="info-item">
+                        <span>📅</span>
+                        <span class="value" th:text="${s.pickupDate}"></span>
+                    </div>
+                    <div class="info-item">
+                        <span>⏰</span>
+                        <span class="value" th:text="${s.pickupTime}"></span>
+                    </div>
+                    <div class="info-item">
+                        <span>📍</span>
+                        <span class="value" th:text="${s.pickupAddress}"></span>
+                    </div>
+                    <div class="info-item">
+                        <span>📞</span>
+                        <span class="value" th:text="${s.contactPhone}"></span>
+                    </div>
+                    <div class="info-item">
+                        <span>🍽️</span>
+                        <span class="value"
+                              th:text="${s.foodRequest.foodItem.restaurant.organizationName}">
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span>👤</span>
+                        <span class="value" th:text="${s.contactPerson}"></span>
+                    </div>
+                </div>
+
+                <div class="schedule-notes"
+                     th:if="${s.notes != null and !s.notes.isEmpty()}">
+                    📝 <span th:text="${s.notes}"></span>
+                </div>
+
+                <div th:if="${s.status == 'SCHEDULED'}">
+                    <a th:href="@{/pickup/cancel/{id}(id=${s.id})}"
+                       class="btn-cancel"
+                       onclick="return confirm('Cancel this pickup?')">
+                        ❌ Cancel Pickup
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FoodBridge — Schedule Pickup</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4ff; }
+        .navbar {
+            background: linear-gradient(135deg, #1565c0, #1976d2);
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 65px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .navbar .brand { color: white; font-size: 22px; font-weight: 700; }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+        .container {
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .card-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .card-header h2 { color: #1565c0; font-size: 22px; }
+        .card-header p { color: #888; font-size: 14px; margin-top: 5px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border 0.3s;
+            background: white;
+            font-family: inherit;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #1976d2;
+            background: #f8fbff;
+        }
+        textarea { resize: vertical; min-height: 80px; }
+        .tip {
+            background: #e3f2fd;
+            border-left: 4px solid #1976d2;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+            color: #1565c0;
+            margin-bottom: 25px;
+        }
+        .btn-save {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1565c0, #1976d2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: opacity 0.3s;
+        }
+        .btn-save:hover { opacity: 0.9; }
+        .btn-back {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #1565c0;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <div class="brand">🌿 FoodBridge</div>
+    <a href="/ngo/dashboard">← Back to Dashboard</a>
+</div>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h2>📅 Schedule Pickup</h2>
+            <p>Set a convenient time to pick up the food</p>
+        </div>
+
+        <div class="tip">
+            💡 The restaurant will be notified of your pickup schedule!
+        </div>
+
+        <form th:action="@{/pickup/schedule/{id}(id=${requestId})}"
+              method="post" th:object="${schedule}">
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>📅 Pickup Date *</label>
+                    <input type="date" th:field="*{pickupDate}" required/>
+                </div>
+                <div class="form-group">
+                    <label>⏰ Pickup Time *</label>
+                    <input type="time" th:field="*{pickupTime}" required/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>📍 Pickup Address *</label>
+                <input type="text" th:field="*{pickupAddress}"
+                       placeholder="Restaurant address or meeting point" required/>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>👤 Contact Person *</label>
+                    <input type="text" th:field="*{contactPerson}"
+                           placeholder="Your name" required/>
+                </div>
+                <div class="form-group">
+                    <label>📞 Contact Phone *</label>
+                    <input type="text" th:field="*{contactPhone}"
+                           placeholder="Your phone number" required/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>📝 Notes (Optional)</label>
+                <textarea th:field="*{notes}"
+                          placeholder="Any special instructions..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-save">
+                📅 Confirm Pickup Schedule
+            </button>
+        </form>
+        <a href="/ngo/dashboard" class="btn-back">Cancel</a>
+    </div>
+</div>
+</body>
+</html>

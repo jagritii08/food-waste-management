@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FoodBridge — Rate Restaurant</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1565c0, #1976d2);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 45px;
+            width: 520px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #1565c0;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+        .back-link:hover { opacity: 0.8; }
+        .food-info {
+            background: #f8fbff;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 30px;
+            border: 1px solid #e3f2fd;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .food-emoji { font-size: 36px; }
+        .food-details h3 { font-size: 16px; color: #333; font-weight: 700; }
+        .food-details p { font-size: 13px; color: #888; margin-top: 3px; }
+        h2 { color: #1565c0; font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 30px; }
+
+        /* Star Rating */
+        .star-section { margin-bottom: 28px; }
+        .star-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #444;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .star-rating {
+            display: flex;
+            gap: 8px;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        .star-rating input { display: none; }
+        .star-rating label {
+            font-size: 42px;
+            cursor: pointer;
+            color: #e0e0e0;
+            transition: color 0.2s, transform 0.2s;
+            line-height: 1;
+        }
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label {
+            color: #ffc107;
+        }
+        .star-rating label:hover { transform: scale(1.2); }
+        .star-descriptions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .star-desc {
+            font-size: 11px;
+            color: #aaa;
+            text-align: center;
+            width: 42px;
+        }
+
+        /* Review */
+        .form-group { margin-bottom: 22px; }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #444;
+            margin-bottom: 8px;
+        }
+        textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e8e8e8;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            transition: border 0.3s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #1976d2;
+            background: #f8fbff;
+        }
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        /* Quick Tags */
+        .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+        .tag {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 2px solid #e0e0e0;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        .tag:hover, .tag.selected {
+            border-color: #1976d2;
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #1565c0, #1976d2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.3s, transform 0.2s;
+        }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+<div class="card">
+    <a href="/ngo/dashboard" class="back-link">← Back to Dashboard</a>
+
+    <h2>⭐ Rate This Restaurant</h2>
+    <p class="subtitle">Share your experience to help other NGOs</p>
+
+    <!-- Food Info -->
+    <div class="food-info">
+        <div class="food-emoji">🍱</div>
+        <div class="food-details">
+            <h3 th:text="${foodItem.name}">Food Name</h3>
+            <p>From: <strong th:text="${foodItem.restaurant.organizationName}">Restaurant</strong></p>
+        </div>
+    </div>
+
+    <form th:action="@{/rating/submit/{id}(id=${foodItemId})}" method="post">
+
+        <!-- Star Rating -->
+        <div class="star-section">
+            <span class="star-label">How would you rate this restaurant?</span>
+            <div class="star-rating">
+                <input type="radio" name="stars" id="s5" value="5" required/>
+                <label for="s5">★</label>
+                <input type="radio" name="stars" id="s4" value="4"/>
+                <label for="s4">★</label>
+                <input type="radio" name="stars" id="s3" value="3"/>
+                <label for="s3">★</label>
+                <input type="radio" name="stars" id="s2" value="2"/>
+                <label for="s2">★</label>
+                <input type="radio" name="stars" id="s1" value="1"/>
+                <label for="s1">★</label>
+            </div>
+            <div id="star-text"
+                 style="margin-top:10px; font-size:14px; color:#666; font-weight:500;">
+                Click a star to rate
+            </div>
+        </div>
+
+        <!-- Quick Tags -->
+        <div class="form-group">
+            <label>Quick Tags (Optional)</label>
+            <div class="tags" id="tagContainer">
+                <span class="tag" onclick="addTag(this, 'Fresh Food')">🥗 Fresh Food</span>
+                <span class="tag" onclick="addTag(this, 'On Time')">⏰ On Time</span>
+                <span class="tag" onclick="addTag(this, 'Good Quantity')">📦 Good Quantity</span>
+                <span class="tag" onclick="addTag(this, 'Well Packed')">📫 Well Packed</span>
+                <span class="tag" onclick="addTag(this, 'Great Service')">🌟 Great Service</span>
+                <span class="tag" onclick="addTag(this, 'Would Recommend')">👍 Would Recommend</span>
+            </div>
+        </div>
+
+        <!-- Review -->
+        <div class="form-group">
+            <label>Write a Review (Optional)</label>
+            <textarea name="review" id="reviewBox"
+                      placeholder="Share your experience with this restaurant..."
+                      maxlength="300"
+                      oninput="updateCount()"></textarea>
+            <div class="char-count"><span id="charCount">0</span>/300</div>
+        </div>
+
+        <button type="submit" class="btn-submit">⭐ Submit Rating</button>
+    </form>
+</div>
+
+<script>
+    const starTexts = {
+        1: '😞 Poor — Not satisfied',
+        2: '😐 Fair — Could be better',
+        3: '🙂 Good — Satisfactory',
+        4: '😊 Very Good — Happy with it',
+        5: '🤩 Excellent — Outstanding!'
+    };
+
+    document.querySelectorAll('.star-rating input').forEach(input => {
+        input.addEventListener('change', function() {
+            document.getElementById('star-text').textContent =
+                starTexts[this.value];
+            document.getElementById('star-text').style.color = '#f57f17';
+        });
+    });
+
+    let selectedTags = [];
+    function addTag(el, tag) {
+        el.classList.toggle('selected');
+        if (selectedTags.includes(tag)) {
+            selectedTags = selectedTags.filter(t => t !== tag);
+        } else {
+            selectedTags.push(tag);
+        }
+        document.getElementById('reviewBox').value =
+            selectedTags.join(', ') +
+            (selectedTags.length ? '. ' : '');
+        updateCount();
+    }
+
+    function updateCount() {
+        const len = document.getElementById('reviewBox').value.length;
+        document.getElementById('charCount').textContent = len;
+    }
+</script>
+</body>
+</html>

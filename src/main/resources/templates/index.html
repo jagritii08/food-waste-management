@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Food Waste Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f7f0; }
+
+        .navbar {
+            background: #2e7d32;
+            padding: 15px 30px;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .container { padding: 30px; }
+
+        .btn-add {
+            background: #2e7d32;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 15px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .btn-add:hover { background: #1b5e20; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: #2e7d32;
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        td { padding: 12px 15px; border-bottom: 1px solid #e0e0e0; }
+        tr:hover { background: #f9f9f9; }
+
+        .wasted { color: red; font-weight: bold; }
+        .fresh { color: green; font-weight: bold; }
+
+        .btn-edit {
+            background: #1976d2;
+            color: white;
+            padding: 5px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .btn-waste {
+            background: #f57c00;
+            color: white;
+            padding: 5px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .btn-delete {
+            background: #c62828;
+            color: white;
+            padding: 5px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .btn-edit:hover { background: #1565c0; }
+        .btn-waste:hover { background: #e65100; }
+        .btn-delete:hover { background: #b71c1c; }
+
+        .empty { text-align: center; padding: 40px; color: #888; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">🌿 Food Waste Management System</div>
+
+<div class="container">
+    <a href="/food/add" class="btn-add">+ Add New Item</a>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+                <th>Expiry Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:if="${#lists.isEmpty(items)}">
+                <td colspan="8" class="empty">Koi item nahi hai — Add New Item karo!</td>
+            </tr>
+            <tr th:each="item : ${items}">
+                <td th:text="${item.id}"></td>
+                <td th:text="${item.name}"></td>
+                <td th:text="${item.category}"></td>
+                <td th:text="${item.quantity}"></td>
+                <td th:text="${item.unit}"></td>
+                <td th:text="${item.expiryDate}"></td>
+                <td>
+                    <span th:if="${item.isWasted}" class="wasted">Wasted ❌</span>
+                    <span th:unless="${item.isWasted}" class="fresh">Fresh ✅</span>
+                </td>
+                <td>
+                    <a th:href="@{/food/edit/{id}(id=${item.id})}" class="btn-edit">Edit</a>
+                    <a th:href="@{/food/waste/{id}(id=${item.id})}" class="btn-waste"
+                       th:unless="${item.isWasted}">Mark Wasted</a>
+                    <a th:href="@{/food/delete/{id}(id=${item.id})}" class="btn-delete"
+                       onclick="return confirm('Delete karna chahte ho?')">Delete</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

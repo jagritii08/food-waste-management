@@ -1,0 +1,581 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FoodBridge — Admin Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 240px;
+            background: linear-gradient(180deg, #7f0000, #b71c1c, #c62828);
+            box-shadow: 3px 0 15px rgba(0,0,0,0.2);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-logo {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-logo h1 { color: white; font-size: 20px; font-weight: 700; }
+        .sidebar-logo p { color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 3px; }
+        .sidebar-menu { padding: 20px 0; flex: 1; }
+        .menu-label {
+            color: rgba(255,255,255,0.4);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 0 20px;
+            margin-bottom: 8px;
+            margin-top: 15px;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .menu-item .icon { font-size: 18px; width: 24px; }
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .logout-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+
+        /* Main Content */
+        .main {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+        .topbar {
+            background: white;
+            padding: 0 30px;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .topbar h2 { font-size: 20px; color: #333; font-weight: 700; }
+        .topbar .admin-badge {
+            background: #fce4ec;
+            color: #b71c1c;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .content { padding: 30px; }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-4px); }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+        }
+        .stat-card:nth-child(1)::before { background: #b71c1c; }
+        .stat-card:nth-child(2)::before { background: #2e7d32; }
+        .stat-card:nth-child(3)::before { background: #1565c0; }
+        .stat-card:nth-child(4)::before { background: #e65100; }
+        .stat-card:nth-child(5)::before { background: #6a1b9a; }
+        .stat-icon { font-size: 28px; margin-bottom: 10px; }
+        .stat-number { font-size: 32px; font-weight: 800; color: #333; }
+        .stat-label { font-size: 12px; color: #888; margin-top: 4px; font-weight: 500; }
+
+        /* Tabs */
+        .tab-nav {
+            display: flex;
+            gap: 0;
+            background: white;
+            border-radius: 12px;
+            padding: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+            width: fit-content;
+        }
+        .tab-btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #b71c1c, #c62828);
+            color: white;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Cards */
+        .data-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .data-card-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .data-card-header h3 { font-size: 16px; font-weight: 700; color: #333; }
+        .count-badge {
+            background: #f5f5f5;
+            color: #666;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #fafafa;
+            padding: 13px 20px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: #666;
+            border-bottom: 1px solid #f0f0f0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 14px 20px;
+            font-size: 14px;
+            color: #333;
+            border-bottom: 1px solid #f8f8f8;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fff5f5; }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge-restaurant { background: #e8f5e9; color: #2e7d32; }
+        .badge-ngo { background: #e3f2fd; color: #1565c0; }
+        .badge-admin { background: #fce4ec; color: #b71c1c; }
+        .badge-available { background: #e8f5e9; color: #2e7d32; }
+        .badge-claimed { background: #fff3e0; color: #e65100; }
+        .badge-collected { background: #e3f2fd; color: #1565c0; }
+        .badge-pending { background: #fff8e1; color: #f57f17; }
+        .badge-approved { background: #e8f5e9; color: #2e7d32; }
+        .btn-delete {
+            background: #ffebee;
+            color: #c62828;
+            padding: 5px 14px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-delete:hover { background: #ffcdd2; }
+        .empty {
+            text-align: center;
+            padding: 50px;
+            color: #bbb;
+        }
+        .empty-icon { font-size: 48px; margin-bottom: 12px; }
+        .empty p { font-size: 15px; }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .action-card {
+            background: white;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .action-icon.red { background: #fce4ec; }
+        .action-icon.green { background: #e8f5e9; }
+        .action-icon.blue { background: #e3f2fd; }
+        .action-text h4 { font-size: 14px; font-weight: 700; color: #333; }
+        .action-text p { font-size: 12px; color: #888; margin-top: 2px; }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <h1>🌿 FoodBridge</h1>
+        <p>Admin Control Panel</p>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-label">NAVIGATION</div>
+        <a class="menu-item active" onclick="showTab('users', this)">
+            <span class="icon">👥</span> Users
+        </a>
+        <a class="menu-item" onclick="showTab('food', this)">
+            <span class="icon">🍱</span> Food Items
+        </a>
+        <a class="menu-item" onclick="showTab('requests', this)">
+            <span class="icon">📋</span> Requests
+        </a>
+        <div class="menu-label">ANALYTICS</div>
+        <a href="/admin/reports" class="menu-item">
+            <span class="icon">📊</span> Reports
+        </a>
+    </div>
+    <div class="sidebar-footer">
+        <a href="/logout" class="logout-btn">
+            <span>🚪</span> Sign Out
+        </a>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+    <div class="topbar">
+        <h2>Admin Dashboard</h2>
+        <span class="admin-badge">👑 Administrator</span>
+    </div>
+
+    <div class="content">
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-number" th:text="${allUsers.size()}">0</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🍽️</div>
+                <div class="stat-number" th:text="${totalRestaurants}">0</div>
+                <div class="stat-label">Restaurants</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🤝</div>
+                <div class="stat-number" th:text="${totalNgos}">0</div>
+                <div class="stat-label">NGOs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🍱</div>
+                <div class="stat-number" th:text="${allFood.size()}">0</div>
+                <div class="stat-label">Food Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-number" th:text="${allRequests.size()}">0</div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="/admin/reports" class="action-card">
+                <div class="action-icon red">📊</div>
+                <div class="action-text">
+                    <h4>View Reports</h4>
+                    <p>Analytics & impact data</p>
+                </div>
+            </a>
+            <a onclick="showTab('food', document.querySelectorAll('.menu-item')[1])"
+               class="action-card" style="cursor:pointer;">
+                <div class="action-icon green">🍱</div>
+                <div class="action-text">
+                    <h4>Manage Food</h4>
+                    <p>View all food listings</p>
+                </div>
+            </a>
+            <a onclick="showTab('requests', document.querySelectorAll('.menu-item')[2])"
+               class="action-card" style="cursor:pointer;">
+                <div class="action-icon blue">📋</div>
+                <div class="action-text">
+                    <h4>View Requests</h4>
+                    <p>All NGO food requests</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Tab Nav -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="showTab('users', this)">
+                👥 Users
+            </button>
+            <button class="tab-btn" onclick="showTab('food', this)">
+                🍱 Food Items
+            </button>
+            <button class="tab-btn" onclick="showTab('requests', this)">
+                📋 Requests
+            </button>
+        </div>
+
+        <!-- Users Tab -->
+        <div class="tab-content active" id="tab-users">
+            <div class="data-card">
+                <div class="data-card-header">
+                    <h3>All Registered Users</h3>
+                    <span class="count-badge"
+                          th:text="${allUsers.size() + ' total'}"></span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Organization</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Address</th>
+                            <th>Role</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(allUsers)}">
+                            <td colspan="7">
+                                <div class="empty">
+                                    <div class="empty-icon">👥</div>
+                                    <p>No users found</p>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:each="u : ${allUsers}">
+                            <td><strong th:text="${u.username}"></strong></td>
+                            <td th:text="${u.organizationName}"></td>
+                            <td th:text="${u.email}"></td>
+                            <td th:text="${u.phone}"></td>
+                            <td th:text="${u.address}"></td>
+                            <td>
+                                <span class="badge badge-restaurant"
+                                      th:if="${u.role == 'RESTAURANT'}">
+                                    🍽️ Restaurant
+                                </span>
+                                <span class="badge badge-ngo"
+                                      th:if="${u.role == 'NGO'}">
+                                    🤝 NGO
+                                </span>
+                                <span class="badge badge-admin"
+                                      th:if="${u.role == 'ADMIN'}">
+                                    👑 Admin
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/delete-user/{id}(id=${u.id})}"
+                                   class="btn-delete"
+                                   th:unless="${u.role == 'ADMIN'}"
+                                   onclick="return confirm('Are you sure you want to delete this user?')">
+                                    Delete
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Food Tab -->
+        <div class="tab-content" id="tab-food">
+            <div class="data-card">
+                <div class="data-card-header">
+                    <h3>All Food Listings</h3>
+                    <span class="count-badge"
+                          th:text="${allFood.size() + ' items'}"></span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Food Name</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Restaurant</th>
+                            <th>Expiry Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(allFood)}">
+                            <td colspan="7">
+                                <div class="empty">
+                                    <div class="empty-icon">🍱</div>
+                                    <p>No food items found</p>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:each="item : ${allFood}">
+                            <td><strong th:text="${item.name}"></strong></td>
+                            <td th:text="${item.category}"></td>
+                            <td th:text="${item.quantity + ' ' + item.unit}"></td>
+                            <td th:text="${item.restaurant.organizationName}"></td>
+                            <td th:text="${item.expiryDate}"></td>
+                            <td>
+                                <span class="badge badge-available"
+                                      th:if="${item.status == 'AVAILABLE'}">
+                                    Available
+                                </span>
+                                <span class="badge badge-claimed"
+                                      th:if="${item.status == 'CLAIMED'}">
+                                    Claimed
+                                </span>
+                                <span class="badge badge-collected"
+                                      th:if="${item.status == 'COLLECTED'}">
+                                    Collected
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/delete-food/{id}(id=${item.id})}"
+                                   class="btn-delete"
+                                   onclick="return confirm('Delete this food item?')">
+                                    Delete
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Requests Tab -->
+        <div class="tab-content" id="tab-requests">
+            <div class="data-card">
+                <div class="data-card-header">
+                    <h3>All Food Requests</h3>
+                    <span class="count-badge"
+                          th:text="${allRequests.size() + ' requests'}"></span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NGO</th>
+                            <th>Food Item</th>
+                            <th>Restaurant</th>
+                            <th>Requested At</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(allRequests)}">
+                            <td colspan="5">
+                                <div class="empty">
+                                    <div class="empty-icon">📭</div>
+                                    <p>No requests found</p>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:each="req : ${allRequests}">
+                            <td><strong th:text="${req.ngo.organizationName}"></strong></td>
+                            <td th:text="${req.foodItem.name}"></td>
+                            <td th:text="${req.foodItem.restaurant.organizationName}"></td>
+                            <td th:text="${req.requestedAt}"></td>
+                            <td>
+                                <span class="badge badge-pending"
+                                      th:if="${req.status == 'PENDING'}">
+                                    ⏳ Pending
+                                </span>
+                                <span class="badge badge-approved"
+                                      th:if="${req.status == 'APPROVED'}">
+                                    ✅ Approved
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function showTab(tabName, el) {
+        document.querySelectorAll('.tab-content').forEach(t => {
+            t.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(t => {
+            t.classList.remove('active');
+        });
+        document.querySelectorAll('.menu-item').forEach(t => {
+            t.classList.remove('active');
+        });
+        document.getElementById('tab-' + tabName).classList.add('active');
+        if (el) el.classList.add('active');
+    }
+</script>
+</body>
+</html>

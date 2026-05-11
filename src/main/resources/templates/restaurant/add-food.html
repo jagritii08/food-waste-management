@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Food Add Karo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f7f0; }
+        .navbar {
+            background: #2e7d32;
+            padding: 15px 30px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h2 { color: #2e7d32; margin-bottom: 25px; }
+        .form-group { margin-bottom: 18px; }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+        .btn-save {
+            width: 100%;
+            padding: 12px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-save:hover { background: #1b5e20; }
+        .btn-back {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #2e7d32;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar">🌿 Food Waste Management System</div>
+
+<div class="container">
+    <h2>➕ Food Add Karo</h2>
+
+    <form action="/restaurant/add-food" method="post" th:object="${foodItem}">
+        <div class="form-group">
+            <label>Food Ka Naam *</label>
+            <input type="text" th:field="*{name}"
+                   placeholder="Jaise: Rice, Dal..." required/>
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            <select th:field="*{category}">
+                <option value="">-- Select Karo --</option>
+                <option value="Vegetables">Vegetables</option>
+                <option value="Fruits">Fruits</option>
+                <option value="Cooked Food">Cooked Food</option>
+                <option value="Dairy">Dairy</option>
+                <option value="Grains">Grains</option>
+                <option value="Beverages">Beverages</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Quantity</label>
+            <input type="number" th:field="*{quantity}"
+                   placeholder="Jaise: 5" step="0.1" min="0"/>
+        </div>
+        <div class="form-group">
+            <label>Unit</label>
+            <select th:field="*{unit}">
+                <option value="">-- Select Karo --</option>
+                <option value="kg">kg</option>
+                <option value="g">g</option>
+                <option value="litre">litre</option>
+                <option value="plates">plates</option>
+                <option value="pieces">pieces</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Expiry Date</label>
+            <input type="date" th:field="*{expiryDate}"/>
+        </div>
+        <button type="submit" class="btn-save">💾 Food Post Karo</button>
+    </form>
+    <a href="/restaurant/dashboard" class="btn-back">← Wapas Dashboard</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FoodBridge — Restaurant Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; }
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 240px;
+            background: linear-gradient(180deg, #1b5e20, #2e7d32, #388e3c);
+            box-shadow: 3px 0 15px rgba(0,0,0,0.2);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-logo {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-logo h1 { color: white; font-size: 20px; font-weight: 700; }
+        .sidebar-logo p { color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 3px; }
+        .sidebar-user {
+            padding: 15px 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-user p { color: rgba(255,255,255,0.5); font-size: 11px; }
+        .sidebar-user h4 {
+            color: white;
+            font-size: 13px;
+            margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sidebar-menu { padding: 20px 0; flex: 1; }
+        .menu-label {
+            color: rgba(255,255,255,0.4);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 0 20px;
+            margin-bottom: 8px;
+            margin-top: 15px;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .menu-item .icon { font-size: 18px; width: 24px; }
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .logout-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .main { margin-left: 240px; min-height: 100vh; }
+        .topbar {
+            background: white;
+            padding: 0 30px;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .topbar h2 { font-size: 20px; color: #333; font-weight: 700; }
+        .rest-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .content { padding: 30px; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-icon-box {
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        .stat-icon-box.green { background: #e8f5e9; }
+        .stat-icon-box.blue { background: #e3f2fd; }
+        .stat-icon-box.orange { background: #fff3e0; }
+        .stat-icon-box.yellow { background: #fff8e1; }
+        .stat-info .number { font-size: 28px; font-weight: 800; color: #333; }
+        .stat-info .label { font-size: 12px; color: #888; margin-top: 2px; }
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 22px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .action-btn.primary {
+            background: linear-gradient(135deg, #1b5e20, #43a047);
+            color: white;
+            box-shadow: 0 4px 12px rgba(46,125,50,0.3);
+        }
+        .action-btn.primary:hover { opacity: 0.9; transform: translateY(-2px); }
+        .action-btn.secondary {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .action-btn.secondary:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+        .action-btn.yellow {
+            background: #fff8e1;
+            color: #f57f17;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .data-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+        .data-card-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .data-card-header h3 { font-size: 16px; font-weight: 700; color: #333; }
+        .count-badge {
+            background: #f5f5f5;
+            color: #666;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #fafafa;
+            padding: 13px 20px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: #666;
+            border-bottom: 1px solid #f0f0f0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 14px 20px;
+            font-size: 14px;
+            color: #333;
+            border-bottom: 1px solid #f8f8f8;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafff8; }
+        .food-photo {
+            width: 45px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .no-photo {
+            width: 45px;
+            height: 45px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-available { background: #e8f5e9; color: #2e7d32; }
+        .badge-claimed { background: #fff3e0; color: #e65100; }
+        .badge-collected { background: #e3f2fd; color: #1565c0; }
+        .badge-pending { background: #fff8e1; color: #f57f17; }
+        .badge-approved { background: #e8f5e9; color: #2e7d32; }
+        .btn-approve {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .btn-approve:hover { background: #c8e6c9; }
+        .btn-delete {
+            background: #ffebee;
+            color: #c62828;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        .btn-delete:hover { background: #ffcdd2; }
+        .empty {
+            text-align: center;
+            padding: 50px;
+            color: #bbb;
+        }
+        .empty-icon { font-size: 48px; margin-bottom: 12px; }
+        .empty p { font-size: 15px; }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <h1>🌿 FoodBridge</h1>
+        <p>Restaurant Portal</p>
+    </div>
+    <div class="sidebar-user">
+        <p>Logged in as</p>
+        <h4 th:text="${user.organizationName}">Restaurant</h4>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-label">MENU</div>
+        <a href="/restaurant/dashboard" class="menu-item active">
+            <span class="icon">🏠</span> Dashboard
+        </a>
+        <a href="/restaurant/add-food" class="menu-item">
+            <span class="icon">➕</span> Add Food
+        </a>
+        <a href="/pickup/restaurant" class="menu-item">
+            <span class="icon">🚚</span> Pickup Schedule
+        </a>
+        <a href="/rating/restaurant" class="menu-item">
+            <span class="icon">⭐</span> My Ratings
+        </a>
+    </div>
+    <div class="sidebar-footer">
+        <a href="/logout" class="logout-btn">
+            <span>🚪</span> Sign Out
+        </a>
+    </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+    <div class="topbar">
+        <h2>Restaurant Dashboard</h2>
+        <span class="rest-badge">🍽️ Restaurant</span>
+    </div>
+
+    <div class="content">
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon-box green">🍱</div>
+                <div class="stat-info">
+                    <div class="number" th:text="${items.size()}">0</div>
+                    <div class="label">Total Food Items</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-box blue">📋</div>
+                <div class="stat-info">
+                    <div class="number" th:text="${requests.size()}">0</div>
+                    <div class="label">Total Requests</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-box orange">✅</div>
+                <div class="stat-info">
+                    <div class="number" th:text="${approvedCount}">0</div>
+                    <div class="label">Approved</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-box yellow">🤝</div>
+                <div class="stat-info">
+                    <div class="number" th:text="${collectedCount}">0</div>
+                    <div class="label">Collected</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="/restaurant/add-food" class="action-btn primary">
+                ➕ Post New Food
+            </a>
+            <a href="/pickup/restaurant" class="action-btn secondary">
+                🚚 View Pickups
+            </a>
+            <a href="/rating/restaurant" class="action-btn yellow">
+                ⭐ My Ratings
+            </a>
+        </div>
+
+        <!-- Food Items -->
+        <div class="data-card">
+            <div class="data-card-header">
+                <h3>My Food Listings</h3>
+                <span class="count-badge"
+                      th:text="${items.size() + ' items'}"></span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>Food Name</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Expiry Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(items)}">
+                        <td colspan="7">
+                            <div class="empty">
+                                <div class="empty-icon">🍽️</div>
+                                <p>No food items posted yet. Click "Post New Food" to start!</p>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:each="item : ${items}">
+                        <td>
+                            <img th:if="${item.photoUrl != null}"
+                                 th:src="${item.photoUrl}"
+                                 class="food-photo" alt="Food"/>
+                            <div th:unless="${item.photoUrl != null}"
+                                 class="no-photo">🍱</div>
+                        </td>
+                        <td><strong th:text="${item.name}"></strong></td>
+                        <td th:text="${item.category}"></td>
+                        <td th:text="${item.quantity + ' ' + item.unit}"></td>
+                        <td th:text="${item.expiryDate}"></td>
+                        <td>
+                            <span class="badge badge-available"
+                                  th:if="${item.status == 'AVAILABLE'}">Available</span>
+                            <span class="badge badge-claimed"
+                                  th:if="${item.status == 'CLAIMED'}">Claimed</span>
+                            <span class="badge badge-collected"
+                                  th:if="${item.status == 'COLLECTED'}">Collected</span>
+                        </td>
+                        <td>
+                            <a th:href="@{/restaurant/delete/{id}(id=${item.id})}"
+                               class="btn-delete"
+                               onclick="return confirm('Delete this food item?')">
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- NGO Requests -->
+        <div class="data-card">
+            <div class="data-card-header">
+                <h3>NGO Food Requests</h3>
+                <span class="count-badge"
+                      th:text="${requests.size() + ' requests'}"></span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>NGO Name</th>
+                        <th>Food Item</th>
+                        <th>Requested At</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(requests)}">
+                        <td colspan="5">
+                            <div class="empty">
+                                <div class="empty-icon">📭</div>
+                                <p>No requests received yet!</p>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:each="req : ${requests}">
+                        <td><strong th:text="${req.ngo.organizationName}"></strong></td>
+                        <td th:text="${req.foodItem.name}"></td>
+                        <td th:text="${req.requestedAt}"></td>
+                        <td>
+                            <span class="badge badge-pending"
+                                  th:if="${req.status == 'PENDING'}">⏳ Pending</span>
+                            <span class="badge badge-approved"
+                                  th:if="${req.status == 'APPROVED'}">✅ Approved</span>
+                        </td>
+                        <td>
+                            <a th:href="@{/restaurant/approve/{id}(id=${req.id})}"
+                               class="btn-approve"
+                               th:if="${req.status == 'PENDING'}">
+                                ✓ Approve
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

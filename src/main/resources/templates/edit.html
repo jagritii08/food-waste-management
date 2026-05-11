@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Food Item</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f7f0; }
+
+        .navbar {
+            background: #2e7d32;
+            padding: 15px 30px;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #2e7d32;
+            margin-bottom: 25px;
+            font-size: 22px;
+        }
+
+        .form-group { margin-bottom: 18px; }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+
+        .btn-update {
+            background: #1976d2;
+            color: white;
+            padding: 11px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-update:hover { background: #1565c0; }
+
+        .btn-back {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #2e7d32;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-back:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">🌿 Food Waste Management System</div>
+
+<div class="container">
+    <h2>✏️ Food Item Edit Karo</h2>
+
+    <form th:action="@{/food/update/{id}(id=${foodItem.id})}" 
+          method="post" th:object="${foodItem}">
+
+        <div class="form-group">
+            <label>Item Ka Naam *</label>
+            <input type="text" th:field="*{name}" required/>
+        </div>
+
+        <div class="form-group">
+            <label>Category</label>
+            <select th:field="*{category}">
+                <option value="">-- Select Karo --</option>
+                <option value="Vegetables">Vegetables</option>
+                <option value="Fruits">Fruits</option>
+                <option value="Dairy">Dairy</option>
+                <option value="Grains">Grains</option>
+                <option value="Meat">Meat</option>
+                <option value="Beverages">Beverages</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Quantity</label>
+            <input type="number" th:field="*{quantity}" 
+                   step="0.1" min="0"/>
+        </div>
+
+        <div class="form-group">
+            <label>Unit</label>
+            <select th:field="*{unit}">
+                <option value="">-- Select Karo --</option>
+                <option value="kg">kg</option>
+                <option value="g">g</option>
+                <option value="litre">litre</option>
+                <option value="ml">ml</option>
+                <option value="pieces">pieces</option>
+                <option value="dozen">dozen</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Expiry Date</label>
+            <input type="date" th:field="*{expiryDate}"/>
+        </div>
+
+        <div class="form-group">
+            <label>Status</label>
+            <select th:field="*{isWasted}">
+                <option value="false">Fresh ✅</option>
+                <option value="true">Wasted ❌</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn-update">🔄 Update Karo</button>
+    </form>
+
+    <a href="/food" class="btn-back">← Wapas List Pe Jao</a>
+</div>
+
+</body>
+</html>
